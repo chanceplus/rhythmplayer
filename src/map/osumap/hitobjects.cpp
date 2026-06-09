@@ -3,18 +3,14 @@
 #include <cmath>
 
 /*
-    HitObject X:
-    Calculate column number with key count
-*/
-int HitObject::getColumnNum(int keyNum)
-{
-    int columnNum = std::floor(X * keyNum / 512);
+    HitObject Time:
+    Get starting time of HitObject.
     
-    if (columnNum < 0)
-        return 0;
-    if (columnNum >= keyNum)
-        return keyNum;
-    return columnNum;
+    getEndTime is used for Spinners and HoldNotes.
+*/
+int HitObject::getStartTime() const
+{
+    return Time;
 }
 
 /*
@@ -49,6 +45,59 @@ bool HitObject::isSpinner() const
 bool HitObject::isHoldNote() const
 {
     return Type & 128 == 128; // bit 7 on = 128
+}
+
+// Static methods for determining struct type
+bool HitObject::isHitCircle(const int& type)
+{
+    return type & 1 == 1; // bit 0 on = 1
+}
+
+bool HitObject::isSlider(const int& type)
+{
+    return type & 2 == 2; // bit 1 on = 2
+}
+
+bool HitObject::isNewCombo(const int& type)
+{
+    return type & 4 == 4; // bit 2 on = 4
+}
+
+bool HitObject::isSpinner(const int& type)
+{
+    return type & 8 == 8; // bit 3 on = 8
+}
+
+bool HitObject::isHoldNote(const int& type)
+{
+    return type & 128 == 128; // bit 7 on = 128
+}
+
+/*
+    HitObject HitSound Bitmask:
+    0 -> normal   (1)
+    1 -> whistle  (2)
+    2 -> finish   (4)
+    3 -> clap     (8)
+*/
+bool HitObject::hasNormalHitsound() const
+{
+    return HitSound & 1 == 1;
+}
+
+bool HitObject::hasWhistleHitsound() const
+{
+    return HitSound & 2 == 2;
+}
+
+bool HitObject::hasFinishHitsound() const
+{
+    return HitSound & 4 == 4;
+}
+
+bool HitObject::hasClapHitsound() const
+{
+    return HitSound & 8 == 8;
 }
 
 /*
@@ -164,4 +213,132 @@ std::vector<int> SliderHitObject::getEdgeSounds() const
 std::vector<std::string> SliderHitObject::getEdgeSets() const
 {
     return _sliderObjectParams.EdgeSets;
+}
+
+/*
+    SpinnerHitObject
+*/
+int SpinnerHitObject::getEndTime() const
+{
+    return _spinnerObjectParams.EndTime;
+}
+
+/*
+    HoldNoteHitObject
+*/
+int HoldNoteHitObject::getEndTime() const
+{
+    return _holdNoteObjectParams.EndTime;
+}
+
+/*
+    Specific Gamemode HitObjects
+*/
+
+/*
+    Taiko
+*/
+
+/*
+    TaikoHitObject
+*/
+int TaikoHitObject::getStartTime() const
+{
+    return Time;
+}
+
+int TaikoHitObject::isKat() const
+{
+    // HitObject is kat if has whistle or clap in hitsound
+    return hasWhistleHitsound() || hasClapHitsound();
+}
+
+/*
+    TaikoSliderHitObject
+*/
+int TaikoSliderHitObject::getStartTime() const
+{
+    return Time;
+}
+
+int TaikoSliderHitObject::getSliderLength() const
+{
+    // SliderLength is in SliderObjectParams
+    // In taiko, this specifies the length of the drumroll
+    return _sliderObjectParams.Length;
+}
+
+int TaikoSliderHitObject::getEndTime() const
+{
+    // End of slider is the StartTime + SliderLength
+    return getStartTime() + getSliderLength();
+}
+
+/*
+    TaikoSpinnerHitObject
+*/
+int TaikoSpinnerHitObject::getStartTime() const
+{
+    return Time;
+}
+
+int TaikoSpinnerHitObject::getSpinnerLength() const
+{
+    // SpinnerLength is EndTime - StartTime
+    return getEndTime() - getStartTime();
+}
+
+int TaikoSpinnerHitObject::getEndTime() const
+{
+    return _spinnerObjectParams.EndTime;
+}
+
+/*
+    Mania
+*/
+
+/*
+    ManiaHitObject
+*/
+int ManiaHitObject::getStartTime() const
+{
+    return Time;
+}
+
+/*
+    ManiaHoldNoteHitObject
+*/
+int ManiaHoldNoteHitObject::getStartTime() const
+{
+    return Time;
+}
+
+int ManiaHoldNoteHitObject::getEndTime() const
+{
+    return _holdNoteObjectParams.EndTime;
+}
+
+/*
+    ManiaHitObject X:
+    Calculate column number with key count
+*/
+int _getColumnNum(int x, int keyCount)
+{
+    int columnNum = std::floor(x * keyCount / 512);
+    
+    if (columnNum < 0)
+        return 0;
+    if (columnNum >= keyCount)
+        return keyCount;
+    return columnNum;
+}
+
+int ManiaHitObject::getColumnNum()
+{
+    _getColumnNum(X, KeyCount);
+}
+
+int ManiaHoldNoteHitObject::getColumnNum()
+{
+    _getColumnNum(X, KeyCount);
 }

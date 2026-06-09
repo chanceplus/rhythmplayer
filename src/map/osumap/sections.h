@@ -5,22 +5,22 @@
 
 struct GeneralSection
 {
-    std::string AudioFilename;
-    int AudioLeadIn;
-    int PreviewTime;
-    int Countdown;
-    std::string SampleSet;
-    double StackLeniency;
-    int Mode;
-    int LetterboxInBreaks;
-    int UseSkinSprites;
-    std::string OverlayPosition;
-    std::string SkinPreference;
-    int EpilepsyWarning;
-    int CountdownOffset;
-    int SpecialStyle;
-    int WidescreenStoryboard;
-    int SamplesMatchPlaybackRate;
+    std::string AudioFilename    = "";
+    int AudioLeadIn              = 0;
+    int PreviewTime              = -1;
+    int Countdown                = 1;
+    std::string SampleSet        = "Normal";
+    double StackLeniency         = 0.7;
+    int Mode                     = 0;
+    int LetterboxInBreaks        = 0;
+    int UseSkinSprites           = 0;
+    std::string OverlayPosition  = "NoChange";
+    std::string SkinPreference   = "";
+    int EpilepsyWarning          = 0;
+    int CountdownOffset          = 0;
+    int SpecialStyle             = 0;
+    int WidescreenStoryboard     = 0;
+    int SamplesMatchPlaybackRate = 0;
 };
 
 struct EditorSection

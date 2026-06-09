@@ -7,7 +7,7 @@ class Parser
 {
 public:
     // Parser implementation functions
-    virtual Map parseMap(std::string filePath) = 0;
+    virtual Map* parseMap(std::string filePath) = 0;
 
     virtual ~Parser() = 0;
 };

@@ -6,25 +6,27 @@
 
 enum EEventType
 {
-    BackgroundEvent,
-    VideoEvent,
-    BreakEvent,
-    UnusedEvent
+    EBackgroundEvent =  0,
+    EVideoEvent      =  1,
+    EBreakEvent      =  2,
+    EUnusedEvent     = -1,
 };
 
 struct Event
 {
 public:
-    virtual EEventType getEventType() const;
-    virtual bool verifyEvent() const;
+    virtual EEventType getEventType() const = 0;
+    virtual bool verifyEvent() const = 0;
 
-protected:
+    Event() {};
+    virtual ~Event() {};
+
     std::variant<int, std::string> EventType;
     int StartTime;
     std::vector<std::variant<int, std::string>> EventParams;    
 };
 
-struct BackgroundEvent : protected Event
+struct BackgroundEvent : public Event
 {
     std::string getFileName() const;
     int getXOffset() const;
@@ -34,7 +36,7 @@ struct BackgroundEvent : protected Event
     bool verifyEvent() const override;
 };
 
-struct VideoEvent : protected Event
+struct VideoEvent : public Event
 {
     int getStartTime() const;
     std::string getFileName() const;
@@ -45,7 +47,7 @@ struct VideoEvent : protected Event
     bool verifyEvent() const override;
 };
 
-struct BreakEvent : protected Event
+struct BreakEvent : public Event
 {
     int getStartTime() const;
     int getEndTime() const;

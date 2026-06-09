@@ -1,11 +1,12 @@
 #pragma once
 
 #include "osumap.h"
-#include "parser.h"
+// #include "parser.h"
 
-class OsuParser : public Parser
+// class OsuParser : public Parser
+class OsuParser
 {
 public:
-    Map parseMap(std::string filePath);
-    ~OsuParser();
+    OsuMap parseMap(std::string filePath);
+    ~OsuParser() {};
 };

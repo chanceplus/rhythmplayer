@@ -1,4 +1,5 @@
 #include <SFML/Graphics.hpp>
+#include <iostream>
 
 #include "parse/osuparser.h"
 
@@ -12,7 +13,7 @@ int main(void){
 
     // Map initialization
     OsuParser osuParser;
-    Map testMap = osuParser.parseMap("./assets/test/maps/4key/4key.osu");
+    OsuMap testMap = osuParser.parseMap("./assets/test/maps/4key/4key.osu");
 
     while (window.isOpen())
     {
@@ -33,6 +34,9 @@ int main(void){
 
         window.display();
     }
+
+    // Close osu map
+    // delete testMap;
 
     // Close window
     window.close();

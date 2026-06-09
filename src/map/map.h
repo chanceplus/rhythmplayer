@@ -7,6 +7,6 @@
 class Map
 {
 public:
-    Map();
-    ~Map();
+    Map() {};
+    virtual ~Map() {};
 };

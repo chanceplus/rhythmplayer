@@ -6,20 +6,26 @@
 #include "sections.h"
 #include "events.h"
 #include "colours.h"
+#include "hitobjects.h"
 
-class OsuMap : public Map
+struct OsuMap : public Map
 {
-public:
-    OsuMap();
-    ~OsuMap();
+    OsuMap() {};
+    ~OsuMap()
+    {
+        for (int i = 0; i < events.size(); i++)
+        {
+            delete events[i];
+        }
+    }
 
-protected:
-    std::string _fileFormat;
-    GeneralSection _generalSection;
-    EditorSection _editorSection;
-    MetadataSection _metadataSection;
-    DifficultySection _difficultySection;
-    std::vector<Event> _events;
-    std::vector<TimingPoint> _timingPoints;
-    std::vector<Colour> _colours;
+    std::string fileFormat;
+    GeneralSection generalSection;
+    EditorSection editorSection;
+    MetadataSection metadataSection;
+    DifficultySection difficultySection;
+    std::vector<Event*> events;
+    std::vector<TimingPoint> timingPoints;
+    std::vector<Colour> colours;
+    std::vector<HitObject> hitObjects;
 };

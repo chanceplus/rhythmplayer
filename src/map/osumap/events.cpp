@@ -43,17 +43,17 @@ bool BreakEvent::verifyEvent() const
 */
 EEventType BackgroundEvent::getEventType() const
 {
-    return EEventType::BackgroundEvent;
+    return EEventType::EBackgroundEvent;
 }
 
 EEventType VideoEvent::getEventType() const
 {
-    return EEventType::VideoEvent;
+    return EEventType::EVideoEvent;
 }
 
 EEventType BreakEvent::getEventType() const
 {
-    return EEventType::BreakEvent;
+    return EEventType::EBreakEvent;
 }
 
 /*
