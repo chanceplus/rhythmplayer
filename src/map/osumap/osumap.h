@@ -27,5 +27,5 @@ struct OsuMap : public Map
     std::vector<Event*> events;
     std::vector<TimingPoint> timingPoints;
     std::vector<Colour> colours;
-    std::vector<HitObject> hitObjects;
+    std::vector<HitObject*> hitObjects;
 };

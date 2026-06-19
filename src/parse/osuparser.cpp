@@ -13,20 +13,35 @@ using ParseMapType = std::variant<
     std::vector<Event*>,
     std::vector<TimingPoint>,
     std::vector<Colour>,
-    std::vector<HitObject>
+    std::vector<HitObject*>
 >;
 
 // Helper Functions
 std::vector<std::string> substring(const std::string& str, const std::string& delim)
 {
     std::vector<std::string> res;
-
     size_t lastPos = 0, nextPos;
-    std::string token;
 
     while ((nextPos = str.find(delim, lastPos)) != std::string::npos)
     {
-        res.push_back(str.substr(lastPos, nextPos));
+        res.push_back(str.substr(lastPos, nextPos - lastPos));
+        lastPos = nextPos + delim.length();
+    }
+    res.push_back(str.substr(lastPos));
+
+    return res;
+}
+
+// Helper Functions
+std::vector<std::string> keyValSubstr(const std::string& str, const std::string& delim)
+{
+    std::vector<std::string> res;
+    size_t lastPos = 0, nextPos;
+
+    nextPos = str.find(delim, lastPos);
+    if (nextPos != std::string::npos)
+    {
+        res.push_back(str.substr(lastPos, nextPos - lastPos));
         lastPos = nextPos + delim.length();
     }
     res.push_back(str.substr(lastPos));
@@ -50,21 +65,21 @@ auto getParser(const T& parsers, const std::string& name)
 // Trim from the start (in place)
 inline void ltrim(std::string &s) {
     s.erase(s.begin(), std::find_if(s.begin(), s.end(), [](unsigned char ch) {
-        return !std::isspace(ch);
+        return !std::isspace(ch) && ch != '\r';
     }));
 }
 
 // Trim from the end (in place)
 inline void rtrim(std::string &s) {
     s.erase(std::find_if(s.rbegin(), s.rend(), [](unsigned char ch) {
-        return !std::isspace(ch);
+        return !std::isspace(ch) && ch != '\r';
     }).base(), s.end());
 }
 
 // Trim from both ends (in place)
 inline void trim(std::string &s) {
-    rtrim(s);
     ltrim(s);
+    rtrim(s);
 }
 
 /*
@@ -75,7 +90,10 @@ inline void trim(std::string &s) {
 std::string parseFileFormat(const std::vector<std::string>& lines)
 {
     if (lines.size() > 0)
-        return lines[0];
+    {
+        std::string fileFormat = lines[0];
+        return fileFormat.substr(3);
+    }
     return "";
 }
 
@@ -106,10 +124,11 @@ GeneralSection parseGeneralSection(const std::vector<std::string>& lines)
 
     for (const auto& line : lines)
     {
-        std::vector<std::string> keyValuePair = substring(line, ": ");
+        std::vector<std::string> keyValuePair = keyValSubstr(line, ":");
         if (keyValuePair.size() < 2)
             continue;
 
+        trim(keyValuePair[1]);
         auto parser = getParser(generalParsers, keyValuePair[0]);
         parser(generalSection, keyValuePair[1]);
     }
@@ -121,14 +140,8 @@ GeneralSection parseGeneralSection(const std::vector<std::string>& lines)
 static const std::unordered_map<std::string, std::function<void(EditorSection&, const std::string&)>> editorParsers = {
     {"Bookmarks", [](EditorSection& editorSection, const std::string& val){ 
         editorSection.Bookmarks = std::vector<int>();
-        size_t lastPos = 0, nextPos;
-        std::string token;
-        while ((nextPos = val.find(",", lastPos)) != std::string::npos)
-        {
-            token = val.substr(lastPos);
-            editorSection.Bookmarks.push_back(std::stoi(token));
-            lastPos = nextPos;
-        }
+        for (const auto& i : substring(val, ","))
+            editorSection.Bookmarks.push_back(std::stoi(i));
     }},
     {"DistanceSpacing", [](EditorSection& editorSection, const std::string& val){ editorSection.DistanceSpacing = std::stod(val); }},
     {"BeatDivisor", [](EditorSection& editorSection, const std::string& val){ editorSection.BeatDivisor = std::stoi(val); }},
@@ -136,17 +149,17 @@ static const std::unordered_map<std::string, std::function<void(EditorSection&, 
     {"TimelineZoom", [](EditorSection& editorSection, const std::string& val){ editorSection.TimelineZoom = std::stod(val); }},
 };
 
-// TODO: Refactor to put all in one function
 EditorSection parseEditorSection(const std::vector<std::string>& lines)
 {
     EditorSection editorSection;
 
     for (const auto& line : lines)
     {
-        std::vector<std::string> keyValuePair = substring(line, ": ");
+        std::vector<std::string> keyValuePair = keyValSubstr(line, ":");
         if (keyValuePair.size() < 2)
             continue;
 
+        trim(keyValuePair[1]);
         auto parser = getParser(editorParsers, keyValuePair[0]);
         parser(editorSection, keyValuePair[1]);
     }
@@ -168,20 +181,21 @@ static const std::unordered_map<std::string, std::function<void(MetadataSection&
     {"BeatmapSetID", [](MetadataSection& metadataSection, const std::string& val){ metadataSection.BeatmapSetID = std::stoi(val); }},
 };
 
-// TODO: Refactor to put all in one function
 MetadataSection parseMetadataSection(const std::vector<std::string>& lines)
 {
     MetadataSection metadataSection;
 
     for (const auto& line : lines)
     {
-        std::vector<std::string> keyValuePair = substring(line, ":");
+        std::vector<std::string> keyValuePair = keyValSubstr(line, ":");
         if (keyValuePair.size() < 2)
             continue;
 
-        trim(keyValuePair[1]); // Lazer adds a space
+        std::string val = keyValuePair[1];
+        trim(val); // Lazer adds a space
+
         auto parser = getParser(metadataParsers, keyValuePair[0]);
-        parser(metadataSection, keyValuePair[1]);
+        parser(metadataSection, val);
     }
 
     return metadataSection;
@@ -197,17 +211,17 @@ static const std::unordered_map<std::string, std::function<void(DifficultySectio
     {"SliderTickRate", [](DifficultySection& difficultySection, const std::string& val){ difficultySection.SliderTickRate = std::stod(val); }},
 };
 
-// TODO: Refactor to put all in one function
 DifficultySection parseDifficultySection(const std::vector<std::string>& lines)
 {
     DifficultySection difficultySection;
 
     for (const auto& line : lines)
     {
-        std::vector<std::string> keyValuePair = substring(line, ":");
+        std::vector<std::string> keyValuePair = keyValSubstr(line, ":");
         if (keyValuePair.size() < 2)
             continue;
 
+        trim(keyValuePair[1]);
         auto parser = getParser(difficultyParsers, keyValuePair[0]);
         parser(difficultySection, keyValuePair[1]);
     }
@@ -230,7 +244,7 @@ std::vector<Event*> parseEventsSection(const std::vector<std::string>& lines)
         std::vector<std::variant<int, std::string>> currentEventParams;
 
         const std::string& eventType = elements[0];
-        if (eventType.length() > 0) // String
+        if (eventType.length() > 1) // String
         {
             if (eventType == "Video")
                 currentEventType = EEventType::EVideoEvent;
@@ -239,16 +253,18 @@ std::vector<Event*> parseEventsSection(const std::vector<std::string>& lines)
             else
                 currentEventType = EEventType::EUnusedEvent;
         }
-        else
+        else // Integer
             currentEventType = std::stoi(eventType);
 
         // Create Event and push to events
-        Event* currentEvent = new BackgroundEvent();
+        Event* currentEvent = nullptr;
         if (currentEventType == EEventType::EVideoEvent)
             currentEvent = new VideoEvent();
-        if (currentEventType == EEventType::EBreakEvent)
+        else if (currentEventType == EEventType::EBreakEvent)
             currentEvent = new BreakEvent();
-        
+        else
+            currentEvent = new BackgroundEvent();
+
         // Base Elements of Event
         currentEvent->EventType = currentEventType;
         currentEvent->StartTime = std::stoi(elements[1]);
@@ -261,7 +277,7 @@ std::vector<Event*> parseEventsSection(const std::vector<std::string>& lines)
             currentEventParams.push_back(std::stoi(elements[3])); // xOffset
             currentEventParams.push_back(std::stoi(elements[4])); // yOffset
         }
-        else if (currentEventType == EEventType::EBackgroundEvent)
+        else if (currentEventType == EEventType::EBreakEvent)
         {
             currentEventParams.push_back(std::stoi(elements[2])); // endTime
         }
@@ -309,31 +325,34 @@ std::vector<Colour> parseColoursSection(const std::vector<std::string>& lines)
 
     for (const auto& line : lines)
     {
-        std::vector<std::string> elements = substring(line, " : ");
+        std::vector<std::string> elements = substring(line, ":");
 
         if (elements.size() <= 1)
             continue;
 
+        for (auto& elem : elements)
+            trim(elem);
+
         currentColour = Colour();
 
-        std::string colorKey = elements[0];
+        std::string colourKey = elements[0];
 
         // Differentiate colour types
         currentColour.ComboNum = -1; // Default value
-        if (colorKey.contains("Combo"))
+        if (colourKey.contains("Combo"))
         {
             currentColour.ColourType = EColourType::Combo;
             
             // Get combo num and add to colour
-            if (colorKey.length() > 5) // "Combo" length
+            if (colourKey.length() > 5) // "Combo" length
             {
-                std::string comboNumStr = colorKey.substr(5, colorKey.length());
+                std::string comboNumStr = colourKey.substr(5, colourKey.length());
                 currentColour.ComboNum = std::stoi(comboNumStr);
             }
         }
-        else if (colorKey.contains("SliderTrackOverride"))
+        else if (colourKey.contains("SliderTrackOverride"))
             currentColour.ColourType = EColourType::SliderTrackOveride;
-        else if (colorKey.contains("SliderBorder"))
+        else if (colourKey.contains("SliderBorder"))
             currentColour.ColourType = EColourType::SliderBorder;
 
         // Add RGBA
@@ -350,10 +369,10 @@ std::vector<Colour> parseColoursSection(const std::vector<std::string>& lines)
     return colours;
 }
 
-std::vector<HitObject> parseHitObjectsSection(const std::vector<std::string>& lines)
+std::vector<HitObject*> parseHitObjectsSection(const std::vector<std::string>& lines)
 {
-    std::vector<HitObject> hitObjects;
-    HitObject currentHitObject;
+    std::vector<HitObject*> hitObjects;
+    HitObject* currentHitObject = nullptr;
 
     for (const auto& line : lines)
     {
@@ -368,20 +387,20 @@ std::vector<HitObject> parseHitObjectsSection(const std::vector<std::string>& li
 
         // Create based on type
         if (HitObject::isHitCircle(currentType))
-            currentHitObject = HitObject();
+            currentHitObject = new HitObject();
         else if (HitObject::isSlider(currentType))
-            currentHitObject = SliderHitObject();
+            currentHitObject = new SliderHitObject();
         else if (HitObject::isSpinner(currentType))
-            currentHitObject = SpinnerHitObject();
+            currentHitObject = new SpinnerHitObject();
         else if (HitObject::isHoldNote(currentType))
-            currentHitObject = HoldNoteHitObject();
+            currentHitObject = new HoldNoteHitObject();
 
         // Add base values to HitObject
-        currentHitObject.X = currentX;
-        currentHitObject.Y = currentY;
-        currentHitObject.Time = currentTime;
-        currentHitObject.Type = currentType;
-        currentHitObject.HitSound = currentHitsound;
+        currentHitObject->X = currentX;
+        currentHitObject->Y = currentY;
+        currentHitObject->Time = currentTime;
+        currentHitObject->Type = currentType;
+        currentHitObject->HitSound = currentHitsound;
 
         // Get ObjectParams
         const int OBJ_PARAMS_START = 5;
@@ -389,25 +408,25 @@ std::vector<HitObject> parseHitObjectsSection(const std::vector<std::string>& li
         {
             const std::string& currentStr = elements[i];
 
-            if (currentHitObject.isHitCircle())
+            if (currentHitObject->isHitCircle())
                 break;
-            else if (currentHitObject.isSlider())
+            else if (currentHitObject->isSlider())
             {
                 if (i == OBJ_PARAMS_START)
                 {
                     // curveType
-                    currentHitObject.ObjectParams.push_back(currentStr[0]);
+                    currentHitObject->ObjectParams.push_back(currentStr[0]);
 
                     // curvePoints
                     std::vector<std::string> curvePointsStrs = substring(
                         currentStr.substr(2), "|"
                     );
-                    currentHitObject.ObjectParams.push_back(curvePointsStrs);
+                    currentHitObject->ObjectParams.push_back(curvePointsStrs);
                 }
                 else if (i == OBJ_PARAMS_START+1) // slides
-                    currentHitObject.ObjectParams.push_back(std::stoi(currentStr));
+                    currentHitObject->ObjectParams.push_back(std::stoi(currentStr));
                 else if (i == OBJ_PARAMS_START+2) // length
-                    currentHitObject.ObjectParams.push_back(std::stod(currentStr));
+                    currentHitObject->ObjectParams.push_back(std::stod(currentStr));
                 else if (i == OBJ_PARAMS_START+3)
                 {
                     // edgeSounds
@@ -418,7 +437,7 @@ std::vector<HitObject> parseHitObjectsSection(const std::vector<std::string>& li
                     for (const auto& str : edgeSoundStrs)
                         edgeSoundInts.push_back(std::stoi(str));
 
-                    currentHitObject.ObjectParams.push_back(edgeSoundInts);
+                    currentHitObject->ObjectParams.push_back(edgeSoundInts);
                 }
                 else if (i == OBJ_PARAMS_START+4)
                 {
@@ -426,26 +445,26 @@ std::vector<HitObject> parseHitObjectsSection(const std::vector<std::string>& li
                     std::vector<std::string> edgeSetsStrs = substring(
                         currentStr, "|"
                     );
-                    currentHitObject.ObjectParams.push_back(edgeSetsStrs);
+                    currentHitObject->ObjectParams.push_back(edgeSetsStrs);
                     break;
                 }
             }
-            else if (currentHitObject.isSpinner())
+            else if (currentHitObject->isSpinner())
             {
                 if (i == OBJ_PARAMS_START) // endTime
                 {
-                    currentHitObject.ObjectParams.push_back(std::stoi(currentStr));
+                    currentHitObject->ObjectParams.push_back(std::stoi(currentStr));
                     break;
                 }
             }
-            else if (currentHitObject.isHoldNote())
+            else if (currentHitObject->isHoldNote())
             {
                 if (i == OBJ_PARAMS_START) // endTime
                 {
                     std::vector<std::string> edgeSetsStrs = substring(
                         currentStr, ":"
                     );
-                    currentHitObject.ObjectParams.push_back(std::stoi(edgeSetsStrs[0]));
+                    currentHitObject->ObjectParams.push_back(std::stoi(edgeSetsStrs[0]));
                     break;
                 }
             }
@@ -453,17 +472,15 @@ std::vector<HitObject> parseHitObjectsSection(const std::vector<std::string>& li
         }
 
         // Get HitSample
-        if (!elements[elements.size()-1].contains(":"))
-            break; // If it doesn't contain ':', it is not a HitSample.
         std::vector<std::string> hitSampleStrings = substring(
             elements[elements.size()-1], ":"
         );
         // Add Integers
         for (int i = 0; i < 4; i++)
-            currentHitObject.HitSample.push_back(std::stoi(hitSampleStrings[i]));
+            currentHitObject->HitSample.push_back(std::stoi(hitSampleStrings[i]));
         // Add Filename String (optional)
         if (hitSampleStrings.size() > 4)
-            currentHitObject.HitSample.push_back(hitSampleStrings[4]);
+            currentHitObject->HitSample.push_back(hitSampleStrings[4]);
 
         hitObjects.push_back(currentHitObject);
     }
@@ -486,10 +503,10 @@ static const std::unordered_map<std::string,
 };
 
 // Parse osu mania/taiko map
-OsuMap OsuParser::parseMap(std::string filePath)
+OsuMap* OsuParser::parseMap(const std::string& filePath)
 {
     std::ifstream osuFile(filePath);
-    OsuMap newMap = OsuMap();
+    OsuMap* newMap = new OsuMap();
 
     if (!osuFile.is_open()) // Check open
     {
@@ -542,23 +559,23 @@ OsuMap OsuParser::parseMap(std::string filePath)
     for (auto res : parseResults)
     {
         if      (std::holds_alternative<std::string>(res))
-            newMap.fileFormat =         std::get<std::string>(res);
+            newMap->fileFormat =         std::get<std::string>(res);
         else if (std::holds_alternative<GeneralSection>(res))
-            newMap.generalSection =     std::get<GeneralSection>(res);
+            newMap->generalSection =     std::get<GeneralSection>(res);
         else if (std::holds_alternative<EditorSection>(res))
-            newMap.editorSection =      std::get<EditorSection>(res);
+            newMap->editorSection =      std::get<EditorSection>(res);
         else if (std::holds_alternative<MetadataSection>(res))
-            newMap.metadataSection =    std::get<MetadataSection>(res);
+            newMap->metadataSection =    std::get<MetadataSection>(res);
         else if (std::holds_alternative<DifficultySection>(res))
-            newMap.difficultySection =  std::get<DifficultySection>(res);
+            newMap->difficultySection =  std::get<DifficultySection>(res);
         else if (std::holds_alternative<std::vector<Event*>>(res))
-            newMap.events =             std::get<std::vector<Event*>>(res);
+            newMap->events =             std::get<std::vector<Event*>>(res);
         else if (std::holds_alternative<std::vector<TimingPoint>>(res))
-            newMap.timingPoints =       std::get<std::vector<TimingPoint>>(res);
+            newMap->timingPoints =       std::get<std::vector<TimingPoint>>(res);
         else if (std::holds_alternative<std::vector<Colour>>(res))
-            newMap.colours =            std::get<std::vector<Colour>>(res);
-        else if (std::holds_alternative<std::vector<HitObject>>(res))
-            newMap.hitObjects =         std::get<std::vector<HitObject>>(res);
+            newMap->colours =            std::get<std::vector<Colour>>(res);
+        else if (std::holds_alternative<std::vector<HitObject*>>(res))
+            newMap->hitObjects =         std::get<std::vector<HitObject*>>(res);
     }
 
     osuFile.close();

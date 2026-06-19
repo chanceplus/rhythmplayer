@@ -13,7 +13,7 @@ int main(void){
 
     // Map initialization
     OsuParser osuParser;
-    OsuMap testMap = osuParser.parseMap("./assets/test/maps/4key/4key.osu");
+    OsuMap* testMap = osuParser.parseMap("./assets/test/maps/4key/4key.osu");
 
     while (window.isOpen())
     {

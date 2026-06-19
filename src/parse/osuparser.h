@@ -7,6 +7,6 @@
 class OsuParser
 {
 public:
-    OsuMap parseMap(std::string filePath);
+    OsuMap* parseMap(const std::string& filePath);
     ~OsuParser() {};
 };

@@ -12,6 +12,7 @@ struct TimingPoint
     int Effects;
 
     // BeatLength
+    bool isBPM() const;
     double getBPM() const;
     double getSV() const;
 

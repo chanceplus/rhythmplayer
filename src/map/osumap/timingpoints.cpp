@@ -7,6 +7,11 @@
     x>=0 -> bpm
     x<=0 -> sv
 */
+bool TimingPoint::isBPM() const
+{
+    return BeatLength >= 0;
+}
+
 double TimingPoint::getBPM() const
 {
     if (BeatLength >= 0)
