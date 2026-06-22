@@ -18,6 +18,7 @@ public:
     // File System
     void loadMap(const std::string& filePath);
     bool isMapLoaded() { return this->mapLoaded; }
+    void deloadMap() { delete map; map = nullptr; this->mapLoaded = false; }
 
     // File Format
     const std::string& getFileFormat() const { return this->map->fileFormat; }

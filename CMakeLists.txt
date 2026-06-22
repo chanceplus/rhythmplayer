@@ -40,6 +40,7 @@ add_library(lib
     src/map/osumap/timingpoints.cpp
     src/map/osumap/hitobjects.cpp
     src/map/osumap/maniawrapper.cpp
+    src/game/scene.cpp
 )
 target_include_directories(lib PUBLIC 
     src
