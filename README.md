@@ -28,8 +28,9 @@
 
 ### Windows
 ```
-./build.bat
-./test.bat
+cmake -B build && cmake --build build
+set ASSETS_PATH={ASSETS_PATH}
+.\build\bin\Debug\tests.exe
 ```
 
 ## TODO
