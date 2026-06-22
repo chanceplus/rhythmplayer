@@ -4,14 +4,14 @@
 
 std::string getAssetPath(const std::string& path)
 {
-    return std::string(std::getenv("ASSETS_PATH")) + "/" + path;
+    return std::string(std::getenv("ASSETS_PATH")) + "\\" + path;
 }
 
 TEST(ManiaWrapper, TestFileFormat)
 {
     OsuParser* osuParser = new OsuParser();
     ManiaWrapper* maniaWrapper = new ManiaWrapper(osuParser);
-    maniaWrapper->loadMap(getAssetPath("test/maps/4key/4key.osu"));
+    maniaWrapper->loadMap(getAssetPath("test\\maps\\4key\\4key.osu"));
 
     std::string fileFormat = maniaWrapper->getFileFormat();
 
@@ -25,7 +25,7 @@ TEST(ManiaWrapper, TestGeneralSection)
 {
     OsuParser* osuParser = new OsuParser();
     ManiaWrapper* maniaWrapper = new ManiaWrapper(osuParser);
-    maniaWrapper->loadMap(getAssetPath("test/maps/4key/4key.osu"));
+    maniaWrapper->loadMap(getAssetPath("test\\maps\\4key\\4key.osu"));
 
     std::string audioFilename = maniaWrapper->getAudioFilename();
     int audioLeadIn = maniaWrapper->getAudioLeadIn();
@@ -63,7 +63,7 @@ TEST(ManiaWrapper, TestEditorSection)
 {
     OsuParser* osuParser = new OsuParser();
     ManiaWrapper* maniaWrapper = new ManiaWrapper(osuParser);
-    maniaWrapper->loadMap(getAssetPath("test/maps/4key/4key.osu"));
+    maniaWrapper->loadMap(getAssetPath("test\\maps\\4key\\4key.osu"));
 
     int distanceSpacing = maniaWrapper->getDistanceSpacing();
     int beatDivisor = maniaWrapper->getBeatDivisor();
@@ -83,7 +83,7 @@ TEST(ManiaWrapper, TestMetadataSection)
 {
     OsuParser* osuParser = new OsuParser();
     ManiaWrapper* maniaWrapper = new ManiaWrapper(osuParser);
-    maniaWrapper->loadMap(getAssetPath("test/maps/4key/4key.osu"));
+    maniaWrapper->loadMap(getAssetPath("test\\maps\\4key\\4key.osu"));
 
     std::string title = maniaWrapper->getTitle();
     std::string titleUnicode = maniaWrapper->getTitleUnicode();
@@ -113,7 +113,7 @@ TEST(ManiaWrapper, TestDifficultySection)
 {
     OsuParser* osuParser = new OsuParser();
     ManiaWrapper* maniaWrapper = new ManiaWrapper(osuParser);
-    maniaWrapper->loadMap(getAssetPath("test/maps/4key/4key.osu"));
+    maniaWrapper->loadMap(getAssetPath("test\\maps\\4key\\4key.osu"));
 
     double hpDrainRate = maniaWrapper->getHPDrainRate();
     double circleSize = maniaWrapper->getCircleSize();
@@ -137,7 +137,7 @@ TEST(ManiaWrapper, TestEventsSection)
 {
     OsuParser* osuParser = new OsuParser();
     ManiaWrapper* maniaWrapper = new ManiaWrapper(osuParser);
-    maniaWrapper->loadMap(getAssetPath("test/maps/4key/4key.osu"));
+    maniaWrapper->loadMap(getAssetPath("test\\maps\\4key\\4key.osu"));
 
     BackgroundEvent event = *dynamic_cast<BackgroundEvent*>((maniaWrapper->getEvents())[0]);
     int eventCount = maniaWrapper->getEventCount();
@@ -154,7 +154,7 @@ TEST(ManiaWrapper, TestTimingPoints)
 {
     OsuParser* osuParser = new OsuParser();
     ManiaWrapper* maniaWrapper = new ManiaWrapper(osuParser);
-    maniaWrapper->loadMap(getAssetPath("test/maps/4key/4key.osu"));
+    maniaWrapper->loadMap(getAssetPath("test\\maps\\4key\\4key.osu"));
 
     TimingPoint timingPoint = maniaWrapper->getTimingPoints()[0];
     int timingPointsCount = maniaWrapper->getTimingPointsCount();
@@ -186,7 +186,7 @@ TEST(ManiaWrapper, TestColours)
 {
     OsuParser* osuParser = new OsuParser();
     ManiaWrapper* maniaWrapper = new ManiaWrapper(osuParser);
-    maniaWrapper->loadMap(getAssetPath("test/maps/4key/4key.osu"));
+    maniaWrapper->loadMap(getAssetPath("test\\maps\\4key\\4key.osu"));
 
     int coloursCount = maniaWrapper->getColoursCount();
     ASSERT_GT(coloursCount, 0);
@@ -213,7 +213,7 @@ TEST(ManiaWrapper, TestHitObjects)
 {
     OsuParser* osuParser = new OsuParser();
     ManiaWrapper* maniaWrapper = new ManiaWrapper(osuParser);
-    maniaWrapper->loadMap(getAssetPath("test/maps/4key/4key.osu"));
+    maniaWrapper->loadMap(getAssetPath("test\\maps\\4key\\4key.osu"));
 
     int hitObjectsCount = maniaWrapper->getHitObjectsCount();
     ASSERT_GT(hitObjectsCount, 0);
