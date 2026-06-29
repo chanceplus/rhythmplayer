@@ -1,7 +1,7 @@
 # rhythmplayer
 
 ## Setup
-- `git clone https://github.com/chanceplus/rhythmplayer.git`
+- `git clone https://github.com/defaultexception/rhythmplayer.git`
 - Download CMake: https://cmake.org/download/
 
 ## Run
