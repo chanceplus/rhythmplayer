@@ -41,12 +41,14 @@ add_library(lib
     src/map/osumap/hitobjects.cpp
     src/map/osumap/maniawrapper.cpp
     src/game/scene.cpp
+    src/game/game.cpp
 )
 target_include_directories(lib PUBLIC 
     src
     src/parse
     src/map
     src/map/osumap
+    src/game
 )
 
 target_compile_features(lib PUBLIC cxx_std_23)

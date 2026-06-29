@@ -8,28 +8,29 @@
 
 ### Linux
 ```bash
-./build.sh
+./build.sh $asset_path # Insert asset path here
 ./run.sh
 ```
 
 ### Windows
 ```
-./build.bat
-./run.bat
+set ASSETS_PATH={ASSETS_PATH}
+cmake -B build && cmake --build build
+.\build\bin\Debug\main.exe
 ```
 
 ## Test
 
 ### Linux
 ```bash
-./build.sh
+./build.sh $asset_path # Insert asset path here
 ./test.sh
 ```
 
 ### Windows
 ```
-cmake -B build && cmake --build build
 set ASSETS_PATH={ASSETS_PATH}
+cmake -B build && cmake --build build
 .\build\bin\Debug\tests.exe
 ```
 

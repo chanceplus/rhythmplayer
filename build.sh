@@ -1,1 +1,2 @@
+export ASSETS_PATH=$1
 cmake -B build && cmake --build build
